@@ -1,0 +1,31 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto21 # Match the Java version on your EC2 instances
+    commands:
+      - echo "Install phase..."
+  pre_build:
+    commands:
+      - echo "Pre-build phase..."
+      # You can add commands like setting up Maven repository if needed
+  build:
+    commands:
+      - echo "Build phase started on $(date)"
+      - mvn clean package -DskipTests # Build the Spring Boot executable JAR, skip tests to speed up pipeline
+      - echo "Build completed on $(date)"
+  post_build:
+    commands:
+      - echo "Post-build phase..."
+      # The artifacts section will handle packaging. No explicit copy needed here if paths are correct.
+
+artifacts:
+  files:
+    - target/Murshedi-0.0.1-SNAPSHOT.jar # Your Spring Boot JAR
+    - appspec.yml # The CodeDeploy appspec file
+    - scripts/**/* # All files in the scripts directory
+  # discard-paths: yes # Use this if you want the paths inside the artifact to be flattened.
+  # For this setup, we want to preserve the paths (e.g., target/jar, scripts/sh)
+  # so that 'appspec.yml' source paths are correct relative to the artifact root.
+  base-directory: "." # This makes the paths in 'files' relative to the project root.
